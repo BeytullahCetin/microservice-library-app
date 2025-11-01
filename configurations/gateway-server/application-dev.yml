@@ -1,6 +1,7 @@
-server:
-  port: 8888
+datasource:
+  url: localhost:5433
 
 eureka:
-  register-with-eureka: true
-  fetch-registry: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
