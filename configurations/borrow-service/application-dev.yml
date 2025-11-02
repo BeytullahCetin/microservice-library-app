@@ -14,3 +14,15 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9094
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9094
+      bindings:
+        kafkaTest-in-0:
+          destination: kafka-test-topic
+          group: borrow-service
