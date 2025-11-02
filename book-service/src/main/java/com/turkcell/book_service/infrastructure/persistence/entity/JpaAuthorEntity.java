@@ -1,18 +1,20 @@
-package com.turkcell.book_service.domain.entities;
+package com.turkcell.book_service.infrastructure.persistence.entity;
 
-public class Author {
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
+@Entity
+@Table(name = "authors")
+public class JpaAuthorEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String firstName;
     private String lastName;
-
-    public Author() {
-    }
-
-    public Author(String firstName, String lastName) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-    }
 
     public Long getId() {
         return id;
@@ -38,3 +40,5 @@ public class Author {
         this.lastName = lastName;
     }
 }
+
+

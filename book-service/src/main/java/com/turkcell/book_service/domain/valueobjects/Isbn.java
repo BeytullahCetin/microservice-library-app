@@ -1,18 +1,13 @@
 package com.turkcell.book_service.domain.valueobjects;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.validation.constraints.NotBlank;
 import java.util.Objects;
 
-@Embeddable
+// Value object without persistence annotations
 public class Isbn {
 
-    @NotBlank
-    @Column(name = "isbn", nullable = false, unique = true, length = 17)
     private String value;
 
-    protected Isbn() {
+    public Isbn() {
     }
 
     public Isbn(String value) {
@@ -33,7 +28,6 @@ public class Isbn {
         if (isbn == null) {
             throw new IllegalArgumentException("ISBN cannot be null");
         }
-        // Simple length check (10 or 13). Implement full checksum if needed.
         int len = isbn.length();
         if (len != 10 && len != 13) {
             throw new IllegalArgumentException("ISBN must be 10 or 13 characters");
