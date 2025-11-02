@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,8 +41,9 @@ public class BookController {
     @PostMapping("/kafka-test")
     public String kafkaTest(@RequestBody KafkaTestRequest request) {
         KafkaEvent event = new KafkaEvent(request.kafkaTest);
-        streamBridge.send("kafkaTest-out-0", event);
-        // Kafka eventi fırlat..
+        Message<KafkaEvent> message = MessageBuilder.withPayload(event).build();
+        streamBridge.send("kafkaTest-out-0", message);
+
         return request.kafkaTest;
     }
 
