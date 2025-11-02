@@ -1,10 +1,14 @@
 spring:
   application:
     name: config-server
+  profiles:
+    active: native
 
   cloud:
     config:
       server:
+        native:
+          search-locations: file:../configurations,file:../configurations/{application}
         git:
           uri: https://github.com/BeytullahCetin/microservice-library-app.git
           default-label: main
