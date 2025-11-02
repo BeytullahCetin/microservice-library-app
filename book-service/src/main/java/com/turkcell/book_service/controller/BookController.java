@@ -44,6 +44,8 @@ public class BookController {
         Message<KafkaTestEvent> message = MessageBuilder.withPayload(event).build();
         streamBridge.send("kafkaTest-out-0", message);
 
+        System.out.println("Kafka test event gönderildi: " + request.kafkaTest);
+
         return request.kafkaTest;
     }
 

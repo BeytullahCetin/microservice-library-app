@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class KafkaTestConsumer {
 	@Bean
-	public Consumer<KafkaTestEvent> orderCreated() {
+	public Consumer<KafkaTestEvent> kafkaTest() {
 		return event -> {
 			System.out.println("kafka test event başarıyla okundu!");
 			System.out.println(event.kafkaTest);
