@@ -16,14 +16,14 @@ spring:
     show-sql: true
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:9094
 
   cloud:
     stream:
       kafka:
         binder:
-          brokers: localhost:9092
+          brokers: localhost:9094
       bindings:
-        orderCreated-out-0:
-          destination: book-topic
+        kafkaTest-out-0:
+          destination: kafka-test-topic
           contentType: application/json
