@@ -35,13 +35,13 @@ public class BookController {
     record KafkaTestRequest(String kafkaTest) {
     }
 
-    record KafkaEvent(String kafkaTest) {
+    record KafkaTestEvent(String kafkaTest) {
     }
 
     @PostMapping("/kafka-test")
     public String kafkaTest(@RequestBody KafkaTestRequest request) {
-        KafkaEvent event = new KafkaEvent(request.kafkaTest);
-        Message<KafkaEvent> message = MessageBuilder.withPayload(event).build();
+        KafkaTestEvent event = new KafkaTestEvent(request.kafkaTest);
+        Message<KafkaTestEvent> message = MessageBuilder.withPayload(event).build();
         streamBridge.send("kafkaTest-out-0", message);
 
         return request.kafkaTest;
