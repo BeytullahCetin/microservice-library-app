@@ -1,17 +1,16 @@
 package com.turkcell.book_service.infrastructure.persistence.entity;
 
-import com.turkcell.book_service.domain.entities.Author;
+import com.turkcell.book_service.domain.entities.Translator;
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * JPA Entity for Author persistence
+ * JPA Entity for Translator persistence
  */
 @Entity
-@Table(name = "authors")
-public class JpaAuthorEntity {
+@Table(name = "translators")
+public class JpaTranslatorEntity {
     
     @Id
     @Column(name = "id", columnDefinition = "VARCHAR(36)")
@@ -26,37 +25,32 @@ public class JpaAuthorEntity {
     @Column(name = "biography", length = 2000)
     private String biography;
     
-    @Column(name = "birth_date")
-    private LocalDate birthDate;
-    
     @Column(name = "nationality", length = 100)
     private String nationality;
     
     // Constructors
-    public JpaAuthorEntity() {
+    public JpaTranslatorEntity() {
     }
     
     // Conversion methods
-    public static JpaAuthorEntity fromDomain(Author author) {
-        JpaAuthorEntity entity = new JpaAuthorEntity();
-        entity.setId(author.getId().toString());
-        entity.setFirstName(author.getFirstName());
-        entity.setLastName(author.getLastName());
-        entity.setBiography(author.getBiography());
-        entity.setBirthDate(author.getBirthDate());
-        entity.setNationality(author.getNationality());
+    public static JpaTranslatorEntity fromDomain(Translator translator) {
+        JpaTranslatorEntity entity = new JpaTranslatorEntity();
+        entity.setId(translator.getId().toString());
+        entity.setFirstName(translator.getFirstName());
+        entity.setLastName(translator.getLastName());
+        entity.setBiography(translator.getBiography());
+        entity.setNationality(translator.getNationality());
         return entity;
     }
     
-    public Author toDomain() {
-        Author author = new Author();
-        author.setId(UUID.fromString(this.id));
-        author.setFirstName(this.firstName);
-        author.setLastName(this.lastName);
-        author.setBiography(this.biography);
-        author.setBirthDate(this.birthDate);
-        author.setNationality(this.nationality);
-        return author;
+    public Translator toDomain() {
+        Translator translator = new Translator();
+        translator.setId(UUID.fromString(this.id));
+        translator.setFirstName(this.firstName);
+        translator.setLastName(this.lastName);
+        translator.setBiography(this.biography);
+        translator.setNationality(this.nationality);
+        return translator;
     }
     
     // Getters and Setters
@@ -90,14 +84,6 @@ public class JpaAuthorEntity {
     
     public void setBiography(String biography) {
         this.biography = biography;
-    }
-    
-    public LocalDate getBirthDate() {
-        return birthDate;
-    }
-    
-    public void setBirthDate(LocalDate birthDate) {
-        this.birthDate = birthDate;
     }
     
     public String getNationality() {

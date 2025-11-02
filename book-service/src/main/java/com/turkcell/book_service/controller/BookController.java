@@ -6,51 +6,92 @@ import com.turkcell.book_service.application.dto.UpdateBookRequest;
 import com.turkcell.book_service.application.service.BookApplicationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
+/**
+ * REST Controller for Book operations
+ * Presentation Layer - exposes API endpoints
+ */
 @RestController
 @RequestMapping("/api/v1/books")
 public class BookController {
-	private final BookApplicationService bookService;
-
-	public BookController(BookApplicationService bookService) {
-		this.bookService = bookService;
-	}
-
-	@GetMapping
-	public List<BookResponse> getBooks() {
-		return bookService.list();
-	}
-
-	@GetMapping("{id}")
-	public BookResponse getBookById(@PathVariable Long id) {
-		return bookService.getById(id);
-	}
-
-	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	public BookResponse createBook(@Valid @RequestBody CreateBookRequest request) {
-		return bookService.create(request);
-	}
-
-	@PutMapping("{id}")
-	public BookResponse updateBook(@PathVariable Long id, @Valid @RequestBody UpdateBookRequest request) {
-		return bookService.update(id, request);
-	}
-
-	@DeleteMapping("{id}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteBook(@PathVariable Long id) {
-		bookService.delete(id);
-	}
+    
+    private final BookApplicationService bookApplicationService;
+    
+    public BookController(BookApplicationService bookApplicationService) {
+        this.bookApplicationService = bookApplicationService;
+    }
+    
+    @PostMapping
+    public ResponseEntity<BookResponse> createBook(@Valid @RequestBody CreateBookRequest request) {
+        BookResponse response = bookApplicationService.createBook(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<BookResponse> updateBook(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateBookRequest request) {
+        BookResponse response = bookApplicationService.updateBook(id, request);
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<BookResponse> getBookById(@PathVariable UUID id) {
+        BookResponse response = bookApplicationService.getBookById(id);
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/isbn/{isbn}")
+    public ResponseEntity<BookResponse> getBookByIsbn(@PathVariable String isbn) {
+        BookResponse response = bookApplicationService.getBookByIsbn(isbn);
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping
+    public ResponseEntity<List<BookResponse>> getAllBooks() {
+        List<BookResponse> responses = bookApplicationService.getAllBooks();
+        return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search")
+    public ResponseEntity<List<BookResponse>> searchBooksByTitle(@RequestParam String title) {
+        List<BookResponse> responses = bookApplicationService.searchBooksByTitle(title);
+        return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/author/{authorId}")
+    public ResponseEntity<List<BookResponse>> getBooksByAuthor(@PathVariable UUID authorId) {
+        List<BookResponse> responses = bookApplicationService.getBooksByAuthor(authorId);
+        return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/publisher/{publisherId}")
+    public ResponseEntity<List<BookResponse>> getBooksByPublisher(@PathVariable UUID publisherId) {
+        List<BookResponse> responses = bookApplicationService.getBooksByPublisher(publisherId);
+        return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/language/{languageId}")
+    public ResponseEntity<List<BookResponse>> getBooksByLanguage(@PathVariable UUID languageId) {
+        List<BookResponse> responses = bookApplicationService.getBooksByLanguage(languageId);
+        return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/available")
+    public ResponseEntity<List<BookResponse>> getAvailableBooks() {
+        List<BookResponse> responses = bookApplicationService.getAvailableBooks();
+        return ResponseEntity.ok(responses);
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBook(@PathVariable UUID id) {
+        bookApplicationService.deleteBook(id);
+        return ResponseEntity.noContent().build();
+    }
 }
+

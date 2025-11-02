@@ -1,81 +1,158 @@
 package com.turkcell.book_service.infrastructure.persistence;
 
-import com.turkcell.book_service.domain.entities.Author;
 import com.turkcell.book_service.domain.entities.Book;
 import com.turkcell.book_service.domain.repositories.BookRepository;
-import com.turkcell.book_service.domain.valueobjects.Isbn;
-import com.turkcell.book_service.infrastructure.persistence.entity.JpaAuthorEntity;
-import com.turkcell.book_service.infrastructure.persistence.entity.JpaBookEntity;
-import org.springframework.stereotype.Repository;
+import com.turkcell.book_service.infrastructure.persistence.entity.*;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Repository
+/**
+ * Adapter implementation for BookRepository
+ * Converts between domain entities and JPA entities
+ */
+@Component
 public class BookRepositoryAdapter implements BookRepository {
-
+    
     private final JpaBookRepository jpaBookRepository;
-
-    public BookRepositoryAdapter(JpaBookRepository jpaBookRepository) {
+    private final JpaPublisherRepository jpaPublisherRepository;
+    private final JpaLanguageRepository jpaLanguageRepository;
+    private final JpaAuthorRepository jpaAuthorRepository;
+    private final JpaTranslatorRepository jpaTranslatorRepository;
+    
+    public BookRepositoryAdapter(JpaBookRepository jpaBookRepository,
+                                 JpaPublisherRepository jpaPublisherRepository,
+                                 JpaLanguageRepository jpaLanguageRepository,
+                                 JpaAuthorRepository jpaAuthorRepository,
+                                 JpaTranslatorRepository jpaTranslatorRepository) {
         this.jpaBookRepository = jpaBookRepository;
+        this.jpaPublisherRepository = jpaPublisherRepository;
+        this.jpaLanguageRepository = jpaLanguageRepository;
+        this.jpaAuthorRepository = jpaAuthorRepository;
+        this.jpaTranslatorRepository = jpaTranslatorRepository;
     }
-
+    
     @Override
     public Book save(Book book) {
-        JpaBookEntity entity = toEntity(book);
+        JpaBookEntity entity = JpaBookEntity.fromDomain(book);
+        
+        // Fetch and set managed entities to avoid detached entity issues
+        if (book.getPublisher() != null) {
+            JpaPublisherEntity publisher = jpaPublisherRepository.findById(book.getPublisher().getId().toString())
+                    .orElseGet(() -> {
+                        JpaPublisherEntity newPublisher = JpaPublisherEntity.fromDomain(book.getPublisher());
+                        return jpaPublisherRepository.save(newPublisher);
+                    });
+            entity.setPublisher(publisher);
+        }
+        
+        if (book.getLanguage() != null) {
+            JpaLanguageEntity language = jpaLanguageRepository.findById(book.getLanguage().getId().toString())
+                    .orElseGet(() -> {
+                        JpaLanguageEntity newLanguage = JpaLanguageEntity.fromDomain(book.getLanguage());
+                        return jpaLanguageRepository.save(newLanguage);
+                    });
+            entity.setLanguage(language);
+        }
+        
+        // Handle authors
+        if (!book.getAuthors().isEmpty()) {
+            List<JpaAuthorEntity> authors = book.getAuthors().stream()
+                    .map(author -> jpaAuthorRepository.findById(author.getId().toString())
+                            .orElseGet(() -> {
+                                JpaAuthorEntity newAuthor = JpaAuthorEntity.fromDomain(author);
+                                return jpaAuthorRepository.save(newAuthor);
+                            }))
+                    .collect(Collectors.toList());
+            entity.setAuthors(authors);
+        }
+        
+        // Handle translators
+        if (!book.getTranslators().isEmpty()) {
+            List<JpaTranslatorEntity> translators = book.getTranslators().stream()
+                    .map(translator -> jpaTranslatorRepository.findById(translator.getId().toString())
+                            .orElseGet(() -> {
+                                JpaTranslatorEntity newTranslator = JpaTranslatorEntity.fromDomain(translator);
+                                return jpaTranslatorRepository.save(newTranslator);
+                            }))
+                    .collect(Collectors.toList());
+            entity.setTranslators(translators);
+        }
+        
         JpaBookEntity saved = jpaBookRepository.save(entity);
-        return toDomain(saved);
+        return saved.toDomain();
     }
-
+    
     @Override
-    public Optional<Book> findById(Long id) {
-        return jpaBookRepository.findById(id).map(this::toDomain);
+    public Optional<Book> findById(UUID id) {
+        return jpaBookRepository.findById(id.toString())
+                .map(JpaBookEntity::toDomain);
     }
-
+    
     @Override
-    public Optional<Book> findByIsbn(Isbn isbn) {
-        return jpaBookRepository.findByIsbn(isbn.getValue()).map(this::toDomain);
+    public Optional<Book> findByIsbn(String isbn) {
+        return jpaBookRepository.findByIsbn(isbn)
+                .map(JpaBookEntity::toDomain);
     }
-
+    
     @Override
     public List<Book> findAll() {
-        return jpaBookRepository.findAll().stream().map(this::toDomain).toList();
+        return jpaBookRepository.findAll().stream()
+                .map(JpaBookEntity::toDomain)
+                .collect(Collectors.toList());
     }
-
+    
     @Override
-    public void deleteById(Long id) {
-        jpaBookRepository.deleteById(id);
+    public List<Book> findByTitleContaining(String title) {
+        return jpaBookRepository.findByTitleContainingIgnoreCase(title).stream()
+                .map(JpaBookEntity::toDomain)
+                .collect(Collectors.toList());
     }
-
-    private JpaBookEntity toEntity(Book book) {
-        JpaBookEntity e = new JpaBookEntity();
-        e.setId(book.getId());
-        e.setTitle(book.getTitle());
-        e.setIsbn(book.getIsbn().getValue());
-        e.setPublicationYear(book.getPublicationYear());
-        List<JpaAuthorEntity> authors = book.getAuthors().stream().map(a -> {
-            JpaAuthorEntity ja = new JpaAuthorEntity();
-            ja.setId(a.getId());
-            ja.setFirstName(a.getFirstName());
-            ja.setLastName(a.getLastName());
-            return ja;
-        }).collect(Collectors.toList());
-        e.setAuthors(authors);
-        e.setCreatedAt(book.getCreatedAt());
-        return e;
+    
+    @Override
+    public List<Book> findByAuthorId(UUID authorId) {
+        return jpaBookRepository.findByAuthorId(authorId.toString()).stream()
+                .map(JpaBookEntity::toDomain)
+                .collect(Collectors.toList());
     }
-
-    private Book toDomain(JpaBookEntity e) {
-        List<Author> authors = e.getAuthors().stream().map(ja -> {
-            Author a = new Author(ja.getFirstName(), ja.getLastName());
-            a.setId(ja.getId());
-            return a;
-        }).collect(Collectors.toList());
-        Book b = new Book(e.getTitle(), new Isbn(e.getIsbn()), e.getPublicationYear(), authors);
-        b.setId(e.getId());
-        return b;
+    
+    @Override
+    public List<Book> findByPublisherId(UUID publisherId) {
+        return jpaBookRepository.findByPublisherId(publisherId.toString()).stream()
+                .map(JpaBookEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<Book> findByLanguageId(UUID languageId) {
+        return jpaBookRepository.findByLanguageId(languageId.toString()).stream()
+                .map(JpaBookEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<Book> findAvailableBooks() {
+        return jpaBookRepository.findAvailableBooks().stream()
+                .map(JpaBookEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public void deleteById(UUID id) {
+        jpaBookRepository.deleteById(id.toString());
+    }
+    
+    @Override
+    public boolean existsByIsbn(String isbn) {
+        return jpaBookRepository.existsByIsbn(isbn);
+    }
+    
+    @Override
+    public long count() {
+        return jpaBookRepository.count();
     }
 }
-
 
