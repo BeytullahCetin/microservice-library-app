@@ -1,0 +1,12 @@
+1- configuration'ların içinde db bağlantıları, username, şifre var. bunlar gizli olması gereken bilgiler değil mi? github'ta tutmanın zararı yok mu?
+2- servislerin içinde profiles: active: dev kısmı production'da prod olarak değişmesi gerekiyor mu? 
+	yoksa o değişikliği docker, kubernetes üzerinden mi yapıyoruz. (claude cevabı bu şekilde oldu. environment variable üzerinde tut, docker, kubernates üzerinden set yap gibi çözüm sundu.)
+3- Servisleri ayırırken içeriği ne kadar dolu ya da ne kadar az olabilir? Fine servis için ayrı olması mı daha iyi olur yoksa borrow içinde olması mı? 
+	Bookservice içine publisher, language, author ve translator çok fazla büyük mü olur?
+4- eski projede (n-layer) Customer içinde ilişkiler için review, borrow, reservation listesi tutuyorduk. List<Review> gibi.
+	microservis'te bu kısmı nasıl yapacağız? 
+5- Load balance'i neye göre belirliyoruz? oluşturduğumuz servis sayısını nasıl handle ediyoruz? 
+	docker-compose'a aynı servisi tekrar ekleyerek yapıyorsak production'daki bir sistemde indirim dönemi gibi bir 
+	anda anlık şekilde gelen yükü karşılayacak bir sistemi nasıl kuruyorlar?
+6- kafka event gönderirken daha kompleks bir yapı olursa onu nasıl yapmak en mantıklısı? yine aynı record'u diğer
+	servise kopyala yapıştır yapmak mı? yoksa başka çözümü var mı?
