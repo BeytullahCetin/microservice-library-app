@@ -1,0 +1,24 @@
+// Toplantı Tarihleri
+17 Kasım 2025 - Saat belirlenecek 
+19 Kasım 2025 - Saat belirlenecek
+20 Kasım 2025 - Saat belirlenecek
+
+// Proje İş Bölümü
+Customer, Review (N-layer) -> Alişan 
+Borrow, Fine (N-layer) -> Arda
+Book (DDD) -> Beytullah
+
+// Daha sonra eklenecekler
+Unit Test'ler
+Kafka
+Keycloak
+BFF
+Frontend
+
+// Notlar
+Tüm ID'ler UUID olacak.
+Tarih alanlarında LocalDate, LocalTime, LocalDateTime kullanalım.
+
+
+// Araştırma Konuları
+- Mikroservisler arası iletişim
