@@ -26,3 +26,7 @@ spring:
         kafkaTest-in-0:
           destination: kafka-test-topic
           group: borrow-service
+
+borrow-service:
+  remote-validation:
+    enabled: false
