@@ -1,77 +1,45 @@
 package com.turkcell.borrow_service.entity;
 
-import java.time.LocalDateTime;
-// import java.util.Date;
-
 import com.turkcell.borrow_service.entity.enums.ReservationStatus;
-
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-// import jakarta.persistence.JoinColumn;
-// import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import java.time.LocalDateTime;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "reservations")
 public class Reservation {
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	@GeneratedValue(strategy = GenerationType.UUID)
+	private UUID id;
 
-	// @ManyToOne
-	// @JoinColumn(name = "customer_id")
-	// private Customer customer;
+	@Column(name = "customer_id", nullable = false, updatable = false)
+	private UUID customerId;
 
-	// @ManyToOne
-	// @JoinColumn(name = "book_id")
-	// private Book book;
+	@Column(name = "book_id", nullable = false, updatable = false)
+	private UUID bookId;
 
-	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "expire_at", nullable = false)
 	private LocalDateTime expireAt;
-	private ReservationStatus reservationStatus;
 
-	public LocalDateTime getExpireAt() {
-		return expireAt;
-	}
-
-	public void setExpireAt(LocalDateTime expireAt) {
-		this.expireAt = expireAt;
-	}
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	// public Customer getCustomer() {
-	// return customer;
-	// }
-
-	// public void setCustomer(Customer customer) {
-	// this.customer = customer;
-	// }
-
-	// public Book getBook() {
-	// return book;
-	// }
-
-	// public void setBook(Book book) {
-	// this.book = book;
-	// }
-
-	public ReservationStatus getReservationStatus() {
-		return reservationStatus;
-	}
-
-	public void setReservationStatus(ReservationStatus reservationStatus) {
-		this.reservationStatus = reservationStatus;
-	}
-
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false)
+	private ReservationStatus status;
 }
