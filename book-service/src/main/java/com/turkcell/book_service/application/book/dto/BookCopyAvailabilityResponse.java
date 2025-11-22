@@ -5,5 +5,5 @@ import java.util.UUID;
 public record BookCopyAvailabilityResponse(
 		UUID id,
 		boolean availableToBorrow,
-		UUID bookId) {
+		UUID bookCopyId) {
 }

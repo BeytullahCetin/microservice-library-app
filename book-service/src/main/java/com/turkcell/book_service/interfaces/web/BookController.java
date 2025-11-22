@@ -42,7 +42,7 @@ public class BookController {
         return createBookQueryHandler.handle(command);
     }
 
-    @GetMapping("/v1/books/available-to-borrow")
+    @GetMapping("/v1/books/available")
     public BookCopyAvailabilityResponse isBookCopyAvailableToBorrow(@Valid CheckBookAvailabilityQuery query) {
         return checkBookAvailabilityQueryHandler.handle(query);
     }
