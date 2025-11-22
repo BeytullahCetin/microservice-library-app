@@ -116,7 +116,7 @@ public class ReservationServiceImpl implements ReservationService {
 		return overdueReservations.size();
 	}
 
-	@Scheduled(cron = "0 0/30 * * * *")
+	@Scheduled(cron = "0 * * * * *")
 	public void scheduledExpirationJob() {
 		expireReservations();
 	}
