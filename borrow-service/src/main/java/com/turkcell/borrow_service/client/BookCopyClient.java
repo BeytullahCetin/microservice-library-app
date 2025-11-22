@@ -1,6 +1,5 @@
 package com.turkcell.borrow_service.client;
 
-import com.turkcell.borrow_service.client.dto.BookCopyAvailabilityResponse;
 import com.turkcell.borrow_service.client.dto.BookCopyClientResponse;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
