@@ -50,13 +50,13 @@ public class BookCopyController {
 		return createBookCopyCommandHandler.handle(command);
 	}
 
-	@PostMapping("/v1/book-copies")
-	public BorrowedBookCopyResponse createBookCopy(@RequestBody @Valid BorrowBookCopyCommand command) {
+	@PostMapping("/v1/book-copies/borrow")
+	public BorrowedBookCopyResponse borrowBookCopy(@RequestBody @Valid BorrowBookCopyCommand command) {
 		return borrowBookCopyCommandHandler.handle(command);
 	}
 
-	@PostMapping("/v1/book-copies")
-	public ReturnedBookCopyResponse createBookCopy(@RequestBody @Valid ReturnBookCopyCommand command) {
+	@PostMapping("/v1/book-copies/return")
+	public ReturnedBookCopyResponse returnBookCopy(@RequestBody @Valid ReturnBookCopyCommand command) {
 		return returnBookCopyCommandHandler.handle(command);
 	}
 
