@@ -16,6 +16,8 @@ import com.turkcell.borrow_service.entity.Borrow;
 import com.turkcell.borrow_service.exception.BusinessException;
 import com.turkcell.borrow_service.exception.NotFoundException;
 import com.turkcell.borrow_service.mapper.BorrowMapper;
+import com.turkcell.borrow_service.messaging.event.BorrowOverdueEvent;
+import com.turkcell.borrow_service.messaging.publisher.BorrowOverdueEventPublisher;
 import com.turkcell.borrow_service.repository.BorrowRepository;
 import com.turkcell.borrow_service.service.BorrowService;
 import com.turkcell.borrow_service.service.ReservationService;
@@ -24,6 +26,7 @@ import feign.FeignException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +44,7 @@ public class BorrowServiceImpl implements BorrowService {
 	private final BookCopyClient bookCopyClient;
 	private final BorrowServiceProperties borrowServiceProperties;
 	private final BookClient bookClient;
+	private final BorrowOverdueEventPublisher borrowOverdueEventPublisher;
 
 	@Override
 	@Transactional
@@ -99,6 +103,7 @@ public class BorrowServiceImpl implements BorrowService {
 		borrow.setReturnDate(returnDate);
 		Borrow savedBorrow = borrowRepository.save(borrow);
 		markBookCopyAsReturned(savedBorrow.getBookCopyId());
+		publishOverdueEventIfNeeded(savedBorrow);
 		return borrowMapper.toResponse(savedBorrow);
 	}
 
@@ -154,6 +159,27 @@ public class BorrowServiceImpl implements BorrowService {
 			ttl = Duration.ofHours(24);
 		}
 		return LocalDateTime.now().plus(ttl);
+	}
+
+	private void publishOverdueEventIfNeeded(Borrow borrow) {
+		LocalDate dueDate = borrow.getDueDate();
+		LocalDate returnDate = borrow.getReturnDate();
+		if (dueDate == null || returnDate == null || !returnDate.isAfter(dueDate)) {
+			return;
+		}
+		long daysOverdue = ChronoUnit.DAYS.between(dueDate, returnDate);
+		if (daysOverdue <= 0) {
+			return;
+		}
+		BorrowOverdueEvent event = new BorrowOverdueEvent(
+				borrow.getId(),
+				borrow.getCustomerId(),
+				borrow.getBookCopyId(),
+				borrow.getBorrowDate(),
+				dueDate,
+				returnDate,
+				daysOverdue);
+		borrowOverdueEventPublisher.publish(event);
 	}
 }
 

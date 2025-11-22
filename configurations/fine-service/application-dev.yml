@@ -14,8 +14,22 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  kafka:
+    bootstrap-servers: localhost:9094
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9094
+      bindings:
+        borrowOverdue-in-0:
+          destination: borrow-overdue-events
+          group: fine-service
+          contentType: application/json
 
 fine-service:
   remote-validation:
     enabled: false
+  overdue:
+    rate-per-day: 5.00
 
