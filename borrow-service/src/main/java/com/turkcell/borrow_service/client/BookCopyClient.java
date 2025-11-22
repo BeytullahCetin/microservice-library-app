@@ -14,9 +14,6 @@ public interface BookCopyClient {
 	@GetMapping("/{bookCopyId}")
 	BookCopyClientResponse getBookCopy(@PathVariable("bookCopyId") UUID bookCopyId);
 
-	@GetMapping("/{bookCopyId}/available-to-borrow")
-	BookCopyAvailabilityResponse isBookCopyAvailableToBorrow(@PathVariable("bookCopyId") UUID bookCopyId);
-
 	@GetMapping("/books/{bookId}/available")
 	BookCopyClientResponse getAvailableBookCopy(@PathVariable("bookId") UUID bookId);
 
