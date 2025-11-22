@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -34,7 +35,7 @@ public class CustomerApplicationServiceImpl implements CustomerApplicationServic
                 .memberStatus(request.getMemberStatus())
                 .build();
 
-        Customer saved = customerRepository.save(customer);
+        Customer saved = customerRepository.save(Objects.requireNonNull(customer));
         return toResponse(saved);
     }
 
@@ -66,7 +67,7 @@ public class CustomerApplicationServiceImpl implements CustomerApplicationServic
     @Override
     public void delete(UUID id) {
         Customer customer = getCustomer(id);
-        customerRepository.delete(customer);
+        customerRepository.delete(Objects.requireNonNull(customer));
     }
 
     @Override
@@ -84,7 +85,7 @@ public class CustomerApplicationServiceImpl implements CustomerApplicationServic
     }
 
     private Customer getCustomer(UUID id) {
-        return customerRepository.findById(id)
+        return customerRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Customer %s not found".formatted(id)));
     }
 
