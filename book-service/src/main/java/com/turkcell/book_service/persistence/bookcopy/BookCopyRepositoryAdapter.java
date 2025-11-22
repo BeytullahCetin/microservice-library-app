@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
+import com.turkcell.book_service.domain.book.model.BookId;
 import com.turkcell.book_service.domain.bookcopy.model.BookCopy;
 import com.turkcell.book_service.domain.bookcopy.model.BookCopyId;
 import com.turkcell.book_service.domain.bookcopy.repository.BookCopyRepository;
@@ -45,5 +46,16 @@ public class BookCopyRepositoryAdapter implements BookCopyRepository {
 	@Override
 	public void delete(BookCopyId id) {
 		repository.deleteById(Objects.requireNonNull(id.value()));
+	}
+
+	@Override
+	public Optional<BookCopy> findFirstAvailableByBookId(BookId bookId) {
+		return repository
+				.findAll()
+				.stream()
+				.map(bookCopyEntityMapper::toDomain)
+				.filter(bookCopy -> bookCopy.getBookId().equals(bookId))
+				.filter(bookCopy -> "AVAILABLE".equals(bookCopy.getStatus()))
+				.findFirst();
 	}
 }

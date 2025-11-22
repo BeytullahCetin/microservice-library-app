@@ -3,6 +3,7 @@ package com.turkcell.book_service.domain.bookcopy.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.turkcell.book_service.domain.book.model.BookId;
 import com.turkcell.book_service.domain.bookcopy.model.BookCopy;
 import com.turkcell.book_service.domain.bookcopy.model.BookCopyId;
 
@@ -14,4 +15,6 @@ public interface BookCopyRepository {
 	BookCopy save(BookCopy bookCopy);
 
 	void delete(BookCopyId id);
+
+	Optional<BookCopy> findFirstAvailableByBookId(BookId bookId);
 }
