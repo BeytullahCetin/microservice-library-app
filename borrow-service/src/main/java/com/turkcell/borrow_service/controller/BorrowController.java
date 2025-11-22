@@ -2,6 +2,7 @@ package com.turkcell.borrow_service.controller;
 
 import com.turkcell.borrow_service.dto.request.CompleteBorrowRequest;
 import com.turkcell.borrow_service.dto.request.CreateBorrowRequest;
+import com.turkcell.borrow_service.dto.response.BorrowOperationResponse;
 import com.turkcell.borrow_service.dto.response.BorrowResponse;
 import com.turkcell.borrow_service.service.BorrowService;
 import jakarta.validation.Valid;
@@ -28,7 +29,7 @@ public class BorrowController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public BorrowResponse createBorrow(@Valid @RequestBody CreateBorrowRequest request) {
+	public BorrowOperationResponse createBorrow(@Valid @RequestBody CreateBorrowRequest request) {
 		return borrowService.createBorrow(request);
 	}
 

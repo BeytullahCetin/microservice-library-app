@@ -30,3 +30,5 @@ spring:
 borrow-service:
   remote-validation:
     enabled: false
+  reservation:
+    auto-hold-ttl: PT24H
