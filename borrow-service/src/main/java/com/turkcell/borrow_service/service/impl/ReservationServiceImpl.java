@@ -50,14 +50,14 @@ public class ReservationServiceImpl implements ReservationService {
 		}
 
 		Reservation reservation = reservationMapper.toReservation(request);
-		Reservation saved = reservationRepository.save(reservation);
+		Reservation saved = reservationRepository.save(Objects.requireNonNull(reservation));
 		return reservationMapper.toResponse(saved);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public ReservationResponse getReservation(UUID id) {
-		Reservation reservation = reservationRepository.findById(id)
+		Reservation reservation = reservationRepository.findById(Objects.requireNonNull(id))
 				.orElseThrow(() -> new NotFoundException("RESERVATION_NOT_FOUND", "Reservation not found"));
 		return reservationMapper.toResponse(reservation);
 	}
