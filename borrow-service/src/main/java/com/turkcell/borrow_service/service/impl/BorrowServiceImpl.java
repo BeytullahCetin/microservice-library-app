@@ -56,7 +56,7 @@ public class BorrowServiceImpl implements BorrowService {
 		Borrow borrow = borrowMapper.toBorrow(request, availableBookCopyId);
 		@SuppressWarnings("null")
 		Borrow savedBorrow = borrowRepository.save(borrow);
-		updateBookCopyAvailability(availableBookCopyId);
+		markBookCopyAsBorrowed(availableBookCopyId);
 		return BorrowOperationResponse.borrowCreated(borrowMapper.toResponse(savedBorrow));
 	}
 
@@ -93,7 +93,9 @@ public class BorrowServiceImpl implements BorrowService {
 		}
 
 		borrow.setReturnDate(returnDate);
-		return borrowMapper.toResponse(borrowRepository.save(borrow));
+		Borrow savedBorrow = borrowRepository.save(borrow);
+		markBookCopyAsReturned(savedBorrow.getBookCopyId());
+		return borrowMapper.toResponse(savedBorrow);
 	}
 
 	private void validateDates(LocalDate borrowDate, LocalDate dueDate) {
@@ -125,11 +127,19 @@ public class BorrowServiceImpl implements BorrowService {
 		}
 	}
 
-	private void updateBookCopyAvailability(UUID bookCopyId) {
+	private void markBookCopyAsBorrowed(UUID bookCopyId) {
 		try {
 			bookCopyClient.markBookCopyAsBorrowed(bookCopyId);
 		} catch (FeignException exception) {
 			throw new BusinessException("BOOK_COPY_UPDATE_FAILED", "Failed to update book copy availability for: " + bookCopyId);
+		}
+	}
+
+	private void markBookCopyAsReturned(UUID bookCopyId) {
+		try {
+			bookCopyClient.markBookCopyAsReturned(bookCopyId);
+		} catch (FeignException exception) {
+			throw new BusinessException("BOOK_COPY_UPDATE_FAILED", "Failed to reset book copy availability for: " + bookCopyId);
 		}
 	}
 

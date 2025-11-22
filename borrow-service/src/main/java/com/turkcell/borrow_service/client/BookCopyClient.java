@@ -23,5 +23,8 @@ public interface BookCopyClient {
 	@PostMapping("/{bookCopyId}/borrow")
 	void markBookCopyAsBorrowed(@PathVariable("bookCopyId") UUID bookCopyId);
 
+	@PostMapping("/{bookCopyId}/return")
+	void markBookCopyAsReturned(@PathVariable("bookCopyId") UUID bookCopyId);
+
 }
 
