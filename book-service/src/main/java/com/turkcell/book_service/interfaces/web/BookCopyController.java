@@ -36,17 +36,17 @@ public class BookCopyController {
 		this.createBookCopyCommandHandler = createBookCopyCommandHandler;
 	}
 
-	@GetMapping("/v1/bookcopies")
+	@GetMapping("/v1/book-copies")
 	public List<BookCopyResponse> getBookCopiesPaged(@Valid ListBookCopiesPagedQuery query) {
 		return listBookCopyQueryHandler.handle(query);
 	}
 
-	@GetMapping("/v1/bookcopies/{id}")
+	@GetMapping("/v1/book-copies/{id}")
 	public BookCopyResponse getBookCopyById(@Valid FindByIdBookCopyQuery query) {
 		return findByIdBookCopyQueryHandler.handle(query);
 	}
 
-	@PostMapping("/v1/bookcopies")
+	@PostMapping("/v1/book-copies")
 	public CreatedBookCopyResponse createBookCopy(@RequestBody @Valid CreateBookCopyCommand command) {
 		return createBookCopyCommandHandler.handle(command);
 	}
