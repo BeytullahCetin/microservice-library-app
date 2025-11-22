@@ -1,7 +1,10 @@
 package com.turkcell.borrow_service.service.impl;
 
+import com.turkcell.borrow_service.client.BookClient;
 import com.turkcell.borrow_service.client.BookCopyClient;
-import com.turkcell.borrow_service.client.dto.BookCopyClientResponse;
+import com.turkcell.borrow_service.client.dto.BookCopyAvailabilityResponse;
+import com.turkcell.borrow_service.client.dto.BorrowBookCopyRequest;
+import com.turkcell.borrow_service.client.dto.ReturnBookCopyRequest;
 import com.turkcell.borrow_service.config.BorrowServiceProperties;
 import com.turkcell.borrow_service.dto.request.CompleteBorrowRequest;
 import com.turkcell.borrow_service.dto.request.CreateBorrowRequest;
@@ -37,6 +40,7 @@ public class BorrowServiceImpl implements BorrowService {
 	private final ReservationService reservationService;
 	private final BookCopyClient bookCopyClient;
 	private final BorrowServiceProperties borrowServiceProperties;
+	private final BookClient bookClient;
 
 	@Override
 	@Transactional
@@ -115,21 +119,22 @@ public class BorrowServiceImpl implements BorrowService {
 
 	private UUID resolveAvailableBookCopyId(UUID bookId) {
 		try {
-			BookCopyClientResponse response = bookCopyClient.getAvailableBookCopy(bookId);
-			if (response == null || response.id() == null) {
+			BookCopyAvailabilityResponse response = bookClient.checkAvailability(bookId);
+			if (response == null || !response.availableToBorrow() || response.bookCopyId() == null) {
 				return null;
 			}
-			return response.id();
-		} catch (FeignException.NotFound exception) {
-			return null;
+			return response.bookCopyId();
 		} catch (FeignException exception) {
+			if (exception.status() == 404 || exception.status() == 500) {
+				return null;
+			}
 			throw new BusinessException("REMOTE_SERVICE_ERROR", exception.getMessage());
 		}
 	}
 
 	private void markBookCopyAsBorrowed(UUID bookCopyId) {
 		try {
-			bookCopyClient.markBookCopyAsBorrowed(bookCopyId);
+			bookCopyClient.borrowBookCopy(new BorrowBookCopyRequest(bookCopyId));
 		} catch (FeignException exception) {
 			throw new BusinessException("BOOK_COPY_UPDATE_FAILED", "Failed to update book copy availability for: " + bookCopyId);
 		}
@@ -137,7 +142,7 @@ public class BorrowServiceImpl implements BorrowService {
 
 	private void markBookCopyAsReturned(UUID bookCopyId) {
 		try {
-			bookCopyClient.markBookCopyAsReturned(bookCopyId);
+			bookCopyClient.returnBookCopy(new ReturnBookCopyRequest(bookCopyId));
 		} catch (FeignException exception) {
 			throw new BusinessException("BOOK_COPY_UPDATE_FAILED", "Failed to reset book copy availability for: " + bookCopyId);
 		}
