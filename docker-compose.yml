@@ -9,6 +9,8 @@ services:
       - "5432:5432"
     volumes:
       - book_service_db_vol:/var/lib/postgresql/data
+    networks:
+      - kafkanet
 
   customer_service_db:
     image: postgres:16
@@ -20,6 +22,8 @@ services:
       - "5433:5432"
     volumes:
       - customer_service_db_vol:/var/lib/postgresql/data
+    networks:
+      - kafkanet
 
   borrow_service_db:
     image: postgres:16
@@ -31,6 +35,8 @@ services:
       - "5434:5432"
     volumes:
       - borrow_service_db_vol:/var/lib/postgresql/data
+    networks:
+      - kafkanet
 
   fine_service_db:
     image: postgres:16
@@ -42,6 +48,21 @@ services:
       - "5435:5432"
     volumes:
       - fine_service_db_vol:/var/lib/postgresql/data
+    networks:
+      - kafkanet
+
+  review_service_db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: review_service_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5436:5432"
+    volumes:
+      - review_service_db_vol:/var/lib/postgresql/data
+    networks:
+      - kafkanet
 
   kafka:
     image: apache/kafka:3.8.0
@@ -92,11 +113,138 @@ services:
     networks:
       - kafkanet
 
+  config-server:
+    build:
+      context: ./config-server
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    volumes:
+      - ./configurations:/configurations:ro
+    environment:
+      SPRING_PROFILES_ACTIVE: native
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: file:/configurations,file:/configurations/{application}
+    networks:
+      - kafkanet
+
+  discovery-server:
+    build:
+      context: ./discovery-server
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8787"
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - config-server
+    networks:
+      - kafkanet
+
+  gateway-server:
+    build:
+      context: ./gateway-server
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8787"
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - config-server
+      - discovery-server
+    networks:
+      - kafkanet
+
+  book-service:
+    build:
+      context: ./book-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8787"
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - config-server
+      - discovery-server
+      - book_service_db
+      - kafka
+    networks:
+      - kafkanet
+
+  customer-service:
+    build:
+      context: ./customer-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8787"
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - config-server
+      - discovery-server
+      - customer_service_db
+    networks:
+      - kafkanet
+
+  borrow-service:
+    build:
+      context: ./borrow-service
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8787"
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - config-server
+      - discovery-server
+      - borrow_service_db
+      - kafka
+    networks:
+      - kafkanet
+
+  fine-service:
+    build:
+      context: ./fine-service
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8787"
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - config-server
+      - discovery-server
+      - fine_service_db
+      - kafka
+    networks:
+      - kafkanet
+
+  review-service:
+    build:
+      context: ./review-service
+    restart: unless-stopped
+    ports:
+      - "8086:8083"
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8787"
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - config-server
+      - discovery-server
+      - review_service_db
+    networks:
+      - kafkanet
+
 volumes:
   book_service_db_vol: {}
   customer_service_db_vol: {}
   borrow_service_db_vol: {}
   fine_service_db_vol: {}
+  review_service_db_vol: {}
   kafka_vol: {}
 
 networks:

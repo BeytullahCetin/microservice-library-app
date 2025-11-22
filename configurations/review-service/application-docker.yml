@@ -1,0 +1,17 @@
+eureka:
+  service-url:
+    defaultZone: http://discovery-server:8761/eureka
+
+spring:
+  datasource:
+    url: jdbc:postgresql://review_service_db:5432/review_service_db
+    driver-class-name: org.postgresql.Driver
+    username: admin
+    password: admin
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+

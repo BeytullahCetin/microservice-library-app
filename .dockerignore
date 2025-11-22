@@ -1,0 +1,14 @@
+.git
+.idea
+.vscode
+**/target
+**/.mvn
+**/mvnw
+**/mvnw.cmd
+**/*.iml
+**/.classpath
+**/.project
+**/.settings
+**/.DS_Store
+docker-compose.override.yml
+
