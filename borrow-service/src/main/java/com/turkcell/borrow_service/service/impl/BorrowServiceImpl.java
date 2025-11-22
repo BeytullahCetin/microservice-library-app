@@ -43,18 +43,20 @@ public class BorrowServiceImpl implements BorrowService {
 	public BorrowOperationResponse createBorrow(CreateBorrowRequest request) {
 		validateDates(request.borrowDate(), request.dueDate());
 		referenceValidator.assertCustomerExists(request.customerId());
-		referenceValidator.assertBookCopyExists(request.bookCopyId());
+		referenceValidator.assertBookExists(request.bookId());
 
-		if (borrowRepository.existsByBookCopyIdAndReturnDateIsNull(request.bookCopyId())) {
+		UUID availableBookCopyId = resolveAvailableBookCopyId(request.bookId());
+		if (availableBookCopyId == null) {
 			ReservationResponse reservationResponse = createReservationForUnavailableBook(request);
 			return BorrowOperationResponse.reservationCreated(
 					reservationResponse,
-					"Requested book copy is not available. Reservation created instead.");
+					"No available book copies found. Reservation created instead.");
 		}
 
-		Borrow borrow = borrowMapper.toBorrow(request);
+		Borrow borrow = borrowMapper.toBorrow(request, availableBookCopyId);
 		@SuppressWarnings("null")
 		Borrow savedBorrow = borrowRepository.save(borrow);
+		updateBookCopyAvailability(availableBookCopyId);
 		return BorrowOperationResponse.borrowCreated(borrowMapper.toResponse(savedBorrow));
 	}
 
@@ -101,26 +103,33 @@ public class BorrowServiceImpl implements BorrowService {
 	}
 
 	private ReservationResponse createReservationForUnavailableBook(CreateBorrowRequest request) {
-		UUID bookId = resolveBookId(request.bookCopyId());
 		LocalDateTime expireAt = calculateReservationExpiration();
 		CreateReservationRequest reservationRequest = new CreateReservationRequest(
 				request.customerId(),
-				bookId,
+				request.bookId(),
 				expireAt);
 		return reservationService.createReservation(reservationRequest);
 	}
 
-	private UUID resolveBookId(UUID bookCopyId) {
+	private UUID resolveAvailableBookCopyId(UUID bookId) {
 		try {
-			BookCopyClientResponse response = bookCopyClient.getBookCopy(bookCopyId);
-			if (response.bookId() == null) {
-				throw new BusinessException("BOOK_ID_MISSING", "Book information missing for book copy: " + bookCopyId);
+			BookCopyClientResponse response = bookCopyClient.getAvailableBookCopy(bookId);
+			if (response == null || response.id() == null) {
+				return null;
 			}
-			return response.bookId();
+			return response.id();
 		} catch (FeignException.NotFound exception) {
-			throw new BusinessException("BOOK_COPY_NOT_FOUND", "Book copy not found: " + bookCopyId);
+			return null;
 		} catch (FeignException exception) {
 			throw new BusinessException("REMOTE_SERVICE_ERROR", exception.getMessage());
+		}
+	}
+
+	private void updateBookCopyAvailability(UUID bookCopyId) {
+		try {
+			bookCopyClient.markBookCopyAsBorrowed(bookCopyId);
+		} catch (FeignException exception) {
+			throw new BusinessException("BOOK_COPY_UPDATE_FAILED", "Failed to update book copy availability for: " + bookCopyId);
 		}
 	}
 

@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public record CreateBorrowRequest(
 		@NotNull UUID customerId,
-		@NotNull UUID bookCopyId,
+		@NotNull UUID bookId,
 		@NotNull LocalDate borrowDate,
 		@NotNull LocalDate dueDate) {
 }
