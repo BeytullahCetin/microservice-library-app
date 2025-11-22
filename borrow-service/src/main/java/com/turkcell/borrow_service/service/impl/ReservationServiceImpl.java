@@ -14,6 +14,7 @@ import com.turkcell.borrow_service.service.support.RemoteReferenceValidator;
 import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -82,7 +83,7 @@ public class ReservationServiceImpl implements ReservationService {
 	@Override
 	@Transactional
 	public ReservationResponse updateStatus(UUID reservationId, UpdateReservationStatusRequest request) {
-		Reservation reservation = reservationRepository.findById(reservationId)
+		Reservation reservation = reservationRepository.findById(Objects.requireNonNull(reservationId))
 				.orElseThrow(() -> new NotFoundException("RESERVATION_NOT_FOUND", "Reservation not found"));
 
 		ReservationStatus currentStatus = reservation.getStatus();
